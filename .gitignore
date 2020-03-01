@@ -1,5 +1,8 @@
 # Notebooks
 .ipynb_checkpoints/
 
+# VS Code
+.vscode/
+
 # Pycache
 *.pyc
