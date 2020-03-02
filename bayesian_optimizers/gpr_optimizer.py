@@ -1,26 +1,30 @@
 from sklearn.gaussian_process import GaussianProcessRegressor
 
 from util.defs import *
-from bayesian_optimizer import BayesianOptimizer
+from bayesian_optimizers.bayesian_optimizer import BayesianOptimizer
 
 
 class GPROptimizer():
-    def __init__(self, gpr: GaussianProcessRegressor):
+    def __init__(self, gpr: GaussianProcessRegressor, X: NDArray, y: NDArray, fit=False):
         self.gpr = gpr
-
-    def optimize(self, iterations: int, objective: Callable[[NDArray], NDArray], acquisition: Callable[[GaussianProcessRegressor], NDArray], X: NDArray, y: NDArray) -> Tuple[NDArray, NDArray]:
-        for _ in range(iterations):
-            # Update model
+        self.X = X
+        self.y = y
+        if fit:
             self.gpr.fit(X, y)
 
+    def optimize(self, iterations: int, objective: Callable[[NDArray], NDArray], acquisition: Callable[[GaussianProcessRegressor, NDArray], NDArray]) -> Tuple[NDArray, NDArray]:
+        for _ in range(iterations):
+            # Update model
+            self.gpr.fit(self.X, self.y)
+
             # Select next point
-            x = acquisition(self.gpr)
+            x = acquisition(self.gpr, self.X)
 
             # Sample objective for new point
             yhat = objective(x)
 
             # Update dataset
-            X = np.vstack((X, x))
-            y = np.vstack((y, yhat))
+            self.X = np.vstack((self.X, x))
+            self.y = np.vstack((self.y, yhat))
         
-        return np.argmin(y)
+        return np.argmin(self.y)

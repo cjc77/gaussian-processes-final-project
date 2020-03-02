@@ -6,3 +6,6 @@
 
 # Pycache
 *.pyc
+
+# Build artifacts
+*.egg-info/
