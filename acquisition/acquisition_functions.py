@@ -5,13 +5,13 @@ from scipy.stats import norm
 from util.defs import *
 
 
-class Acquisition(ABC):
+class AcquisitionFunction(ABC):
     @abstractmethod
     def acquire(self, X: NDArray, f_hat: float) -> NDArray:
         pass
 
 
-class ProbabilityOfImprovement(Acquisition):
+class ProbabilityOfImprovement(AcquisitionFunction):
     def __init__(self, epsilon: float):
         self.epsilon = epsilon
 
