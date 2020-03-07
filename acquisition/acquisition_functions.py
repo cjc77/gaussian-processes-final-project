@@ -7,7 +7,7 @@ from util.defs import *
 
 class AcquisitionFunction(ABC):
     @abstractmethod
-    def acquire(self, X: NDArray, f_hat: float) -> NDArray:
+    def acquire(self, surrogate: object, X: NDArray, f_hat: float) -> NDArray:
         pass
 
 
