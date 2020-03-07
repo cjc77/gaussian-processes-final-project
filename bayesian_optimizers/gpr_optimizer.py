@@ -17,7 +17,7 @@ class GPROptimizer():
         if fit:
             self.gpr.fit(X, y)
 
-    def optimize(self, iterations: int) -> Tuple[NDArray, NDArray]:
+    def optimize(self, iterations: int, thresh: float = None) -> Tuple[NDArray, NDArray]:
         for _ in range(iterations):
             # Update model
             self.gpr.fit(self.X, self.y)
@@ -31,5 +31,8 @@ class GPROptimizer():
             # Update dataset
             self.X = np.vstack((self.X, x))
             self.y = np.vstack((self.y, yhat))
+
+            if thresh and yhat <= thresh:
+                break
         
         return np.argmin(self.y)
