@@ -8,15 +8,37 @@ from acquisition.acquisition_functions import AcquisitionFunction
 
 
 class AcquisitionOptimizer(ABC):
+    """
+    Optimizer which uses an acquisition funtion to find optimal inputs
+    to a surrogate function. These inputs should then be used to sample
+    some true objective function.
+    """
     def __init__(self, surrogate: object, acquisition: AcquisitionFunction):
         self.surrogate = surrogate
         self.acquisition = acquisition
 
     @abstractmethod
     def optimize(self, X: NDArray, bounds: NDArray, param_types: Sequence[ParamType]) -> NDArray:
+        """ Optimize the acquisition function with respect to 
+        inputs to the the surrogate.
+        
+        Args:
+            X (NDArray): All samples evaluated on the loss so far.
+            bounds (NDArray): A dimension (P, 2) Matrix where each row is for a 
+                hyperparameter and the columns are the min/max bounds of 
+                each hyperparameter, respectively.
+            param_types (Sequence): A sequence of types for each hyperparameter. 
+                Order should match the rows of `bounds`.
+        
+        Returns:
+            NDArray: 1d array which is the optimal next value of `X` to 
+                try on the objective. Returned array will be of floats,
+                but hyperparameter indices specified as integers will be 
+                rounded to the nearest integer (e.g. 5.49 to 5.0).
+        """
         pass
 
-    def enforce_param_types(self, x: NDArray, param_types: Sequence[ParamType]) -> NDArray:
+    def _enforce_param_types(self, x: NDArray, param_types: Sequence[ParamType]) -> NDArray:
         assert x.ndim == 1, f"Assuming x to be a 1-d vector, not {x.shape}"
         for col in range(len(x)):
             if param_types[col] == ParamType.Disc:
@@ -25,6 +47,15 @@ class AcquisitionOptimizer(ABC):
 
 class RandomAcquisitionOpt(AcquisitionOptimizer):
     def __init__(self, surrogate: object, acquisition: AcquisitionFunction, rand: Optional[RandomState], sample_size=10):
+        """ 
+        Args:
+            surrogate (object): The surrogate model which will be sampled.
+            acquisition (AcquisitionFunction): The acquisition function which will
+                be used in order to evaluate samples on the surrogate.
+            rand (RandomObject): Random seed (defaults to `numpy.random`)
+            sample_size (int): Number of random samples to use for sampling the
+                acquisition function.
+        """
         super(RandomAcquisitionOpt, self).__init__(surrogate, acquisition)
         self.rand = rand if rand else np.random
         self.sample_size = sample_size
@@ -51,7 +82,7 @@ class RandomAcquisitionOpt(AcquisitionOptimizer):
         
         # returns 1d vector (handle reshaping elsewhere)
         best_x = X_samp[np.argmin(scores)]
-        self.enforce_param_types(best_x, param_types)
+        self._enforce_param_types(best_x, param_types)
         return best_x
 
 
@@ -66,6 +97,15 @@ class RandomAcquisitionOpt(AcquisitionOptimizer):
 
 class ConstrainedAcquisitionOpt(AcquisitionOptimizer):
     def __init__(self, surrogate: object, acquisition: AcquisitionFunction, rand: Optional[RandomState], n_restarts = 10):
+        """ 
+        Args:
+            surrogate (object): The surrogate model which will be sampled.
+            acquisition (AcquisitionFunction): The acquisition function which will
+                be used in order to evaluate samples on the surrogate.
+            rand (RandomObject): Random seed (defaults to `numpy.random`)
+            n_restarts (int): Number of points at which to restart the optimization. Higher
+                values will mean longer rounds, but may lead to finding better results.
+        """
         super(ConstrainedAcquisitionOpt, self).__init__(surrogate, acquisition)
         self.rand = rand if rand else np.random
         self.n_restarts = n_restarts
@@ -103,5 +143,5 @@ class ConstrainedAcquisitionOpt(AcquisitionOptimizer):
                 best_x = x_new 
         
         # returns 1d vector (handle reshaping elsewhere)
-        self.enforce_param_types(best_x, param_types)
+        self._enforce_param_types(best_x, param_types)
         return best_x
