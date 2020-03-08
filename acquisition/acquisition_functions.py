@@ -39,8 +39,6 @@ class AcquisitionFunction(ABC):
 
 
 class ProbabilityOfImprovement(AcquisitionFunction):
-    """ Implementation of the probability of improvement acquisition function.
-    """
     def __init__(self, epsilon: float = 1e-11):
         super(ProbabilityOfImprovement, self).__init__(epsilon)
 
