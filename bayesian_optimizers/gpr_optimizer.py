@@ -6,7 +6,8 @@ from acquisition.acquisition_optimizers import AcquisitionOptimizer
 
 
 class GPROptimizer():
-    def __init__(self, gpr: GaussianProcessRegressor, X: NDArray, y: NDArray, opt_acquisition: AcquisitionOptimizer, objective: Objective, bounds: Sequence[Tuple], param_types: Sequence[ParamType], fit=False):
+    def __init__(self, gpr: GaussianProcessRegressor, X: NDArray, y: NDArray, opt_acquisition: AcquisitionOptimizer, objective: Objective, bounds: NDArray, param_types: Sequence[ParamType], fit=False):
+        assert bounds.shape[1] == 2, "Bounds must be matrix of pairs of (max, min) values."
         self.gpr = gpr
         self.X = X
         self.y = y

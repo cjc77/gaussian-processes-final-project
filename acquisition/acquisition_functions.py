@@ -21,9 +21,6 @@ class AcquisitionFunction(ABC):
         self.epsilon = epsilon
 
     @abstractmethod
-<<<<<<< Updated upstream
-    def acquire(self, surrogate: object, X: NDArray, f_hat: float) -> NDArray:
-=======
     def acquire(self, X: NDArray, surrogate: object, f_hat: float) -> NDArray:
         """ Evaluate the acquisition function.
         
@@ -38,7 +35,6 @@ class AcquisitionFunction(ABC):
                 (in order). Output will be scalar for 1d X input.
             
         """
->>>>>>> Stashed changes
         pass
 
 
@@ -48,7 +44,10 @@ class ProbabilityOfImprovement(AcquisitionFunction):
     def __init__(self, epsilon: float = 1e-11):
         super(ProbabilityOfImprovement, self).__init__(epsilon)
 
-    def acquire(self, surrogate: object, X: NDArray, f_hat: float) -> NDArray:
+    def acquire(self, X: NDArray, surrogate: object, f_hat: float) -> NDArray:
+        # Turn 1d vector into 1 x d vector
+        if X.ndim < 2:
+            X = X[np.newaxis, :]
         mu, std = surrogate.predict(X, return_std=True)
         if mu.ndim > 1:
             mu = mu[:, 0]
@@ -63,7 +62,10 @@ class ExpectedImprovement(AcquisitionFunction):
     def __init__(self, epsilon: float = 1e-11):
         super(ExpectedImprovement, self).__init__(epsilon)
 
-    def acquire(self, surrogate: object, X: NDArray, f_hat: float) -> NDArray:
+    def acquire(self, X: NDArray, surrogate: object, f_hat: float) -> NDArray:
+        # Turn 1d vector into 1 x d vector
+        if X.ndim < 2:
+            X = X[np.newaxis, :]
         mu, std = surrogate.predict(X, return_std=True)
         if mu.ndim > 1:
             mu = mu[:, 0]
