@@ -7,7 +7,7 @@ from util.defs import *
 
 class AcquisitionFunction(ABC):
     @abstractmethod
-    def acquire(self, surrogate: object, X: NDArray, f_hat: float) -> NDArray:
+    def acquire(self, X: NDArray, surrogate: object, f_hat: float) -> NDArray:
         pass
 
 
@@ -15,7 +15,10 @@ class ProbabilityOfImprovement(AcquisitionFunction):
     def __init__(self, epsilon: float = 1e-11):
         self.epsilon = epsilon
 
-    def acquire(self, surrogate: object, X: NDArray, f_hat: float) -> NDArray:
+    def acquire(self, X: NDArray, surrogate: object, f_hat: float) -> NDArray:
+        # Turn 1d vector into 1 x d vector
+        if X.ndim < 2:
+            X = X[np.newaxis, :]
         mu, std = surrogate.predict(X, return_std=True)
         if mu.ndim > 1:
             mu = mu[:, 0]
@@ -30,7 +33,10 @@ class ExpectedImprovement(AcquisitionFunction):
     def __init__(self, epsilon: float = 1e-11):
         self.epsilon = epsilon
 
-    def acquire(self, surrogate: object, X: NDArray, f_hat: float) -> NDArray:
+    def acquire(self, X: NDArray, surrogate: object, f_hat: float) -> NDArray:
+        # Turn 1d vector into 1 x d vector
+        if X.ndim < 2:
+            X = X[np.newaxis, :]
         mu, std = surrogate.predict(X, return_std=True)
         if mu.ndim > 1:
             mu = mu[:, 0]
