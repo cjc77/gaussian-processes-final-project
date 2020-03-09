@@ -7,24 +7,20 @@ from util.defs import *
 from acquisition.acquisition_functions import AcquisitionFunction
 
 
-def rand_sample_in_bounds(bounds: Tuple, param_type: ParamType, rand: RandomState) -> Union[float, int]:
-    # Uniform sample
-    if param_type == ParamType.Cont:
-        x_j = rand.uniform(bounds[0], bounds[1])
-    elif param_type == ParamType.Disc:
-        x_j = rand.randint(bounds[0], bounds[1])
-    return x_j
-
-
-def random_x_sample(bounds: NDArray, param_types: ParamType, rand: RandomState=None) -> NDArray:
+def random_x_sample(bounds: NDArray, param_types: Sequence[ParamType], samples: int, rand: RandomState=None) -> NDArray:
+    assert bounds.ndim == 2, f"Bounds must be 2d, not {bounds.shape}"
     assert len(bounds) == len(param_types), "Must have bounds and param types for each param."
     if not rand:
         rand = np.random
-    x = []
-    cols = len(bounds)
-    for c in range(cols):
-        x.append(rand_sample_in_bounds(bounds[c], param_types[c], rand))
-    return np.array(x)
+    if type(param_types) != NDArray:
+        pt = np.array(param_types)
+
+    X = rand.uniform(low=bounds[:, 0], high=bounds[:, 1], size=(samples, len(bounds)))
+
+    disc_inds = np.where(pt == ParamType.Disc)[0]
+    X[:, disc_inds] = np.round(X[:, disc_inds])
+
+    return X
 
 
 class AcquisitionOptimizer(ABC):
@@ -87,15 +83,8 @@ class RandomAcquisitionOpt(AcquisitionOptimizer):
         # Find best surrogate score so far
         yhat = self.surrogate.predict(X)
         best_y = yhat.min()
-        n_params = X.shape[1] 
-        X_samp = []
 
-        # random search of the domain
-        for _ in range(self.sample_size):
-            x_i = np.array([rand_sample_in_bounds(bounds[j], param_types[j], self.rand) for j in range(n_params)])
-            X_samp.append(x_i)
-        
-        X_samp: NDArray = np.array(X_samp)
+        X_samp = random_x_sample(bounds, param_types, self.sample_size, self.rand)
 
         # find acquisition function value for each sample
         scores: NDArray = self.acquisition.acquire(X_samp, self.surrogate, best_y)
@@ -104,15 +93,6 @@ class RandomAcquisitionOpt(AcquisitionOptimizer):
         best_x = X_samp[np.argmin(scores)]
         self._enforce_param_types(best_x, param_types)
         return best_x
-
-
-    # def rand_sample_in_bounds(self, bounds: Tuple, param_type: ParamType) -> Union[float, int]:
-    #     # Uniform sample
-    #     if param_type == ParamType.Cont:
-    #         x_j = self.rand.uniform(bounds[0], bounds[1])
-    #     elif param_type == ParamType.Disc:
-    #         x_j = self.rand.randint(bounds[0], bounds[1])
-    #     return x_j
 
 
 class ConstrainedAcquisitionOpt(AcquisitionOptimizer):
