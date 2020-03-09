@@ -132,14 +132,14 @@ class ConstrainedAcquisitionOpt(AcquisitionOptimizer):
                            args=(self.surrogate, best_y), 
                            method="L-BFGS-B",
                            bounds=bounds)
-            ei_new = opt.fun
+            acq_new = opt.fun
             x_new = opt.x
 
             if best_acq is None:
-                best_acq = ei_new
+                best_acq = acq_new
                 best_x = x_new
-            elif ei_new < best_acq:
-                best_acq = ei_new 
+            elif acq_new < best_acq:
+                best_acq = acq_new 
                 best_x = x_new 
         
         # returns 1d vector (handle reshaping elsewhere)
