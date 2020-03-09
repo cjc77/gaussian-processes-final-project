@@ -18,16 +18,23 @@ class GPROptimizer():
         if fit:
             self.gpr.fit(X, y)
 
-    def optimize(self, iterations: int, thresh: float = None) -> Tuple[NDArray, NDArray]:
-        for _ in range(iterations):
+    def optimize(self, iterations: int, thresh: float = None, verbose=False) -> Tuple[NDArray, NDArray]:
+        for i in range(iterations):
+            if verbose:
+                print(f"Optimization iteration {i + 1}")
             # Update model
             self.gpr.fit(self.X, self.y)
 
             # Select next point
             x = self.opt_acquisition.optimize(self.X, self.bounds, self.param_types)
+            if verbose:
+                print(f"Selected next parameter sample from acquisition optimizer: {x}")
 
             # Sample objective for new point
             yhat = self.objective(x)
+            if verbose:
+                print(f"Objective value at sample: {np.round(yhat, decimals=4)}")
+                print(f"==============================================================\n")
 
             # Update dataset
             self.X = np.vstack((self.X, x))
@@ -35,5 +42,11 @@ class GPROptimizer():
 
             if thresh and yhat <= thresh:
                 break
-        
-        return np.argmin(self.y)
+
+        min_idx = np.argmin(self.y)
+        res = {"argmin": min_idx, "minimizer": self.X[min_idx], "minimum": self.y[min_idx]}
+
+        if verbose:
+            print(f"Optimization yielded: {res}")
+
+        return res

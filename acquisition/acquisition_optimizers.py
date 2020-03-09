@@ -7,6 +7,26 @@ from util.defs import *
 from acquisition.acquisition_functions import AcquisitionFunction
 
 
+def rand_sample_in_bounds(bounds: Tuple, param_type: ParamType, rand: RandomState) -> Union[float, int]:
+    # Uniform sample
+    if param_type == ParamType.Cont:
+        x_j = rand.uniform(bounds[0], bounds[1])
+    elif param_type == ParamType.Disc:
+        x_j = rand.randint(bounds[0], bounds[1])
+    return x_j
+
+
+def random_x_sample(bounds: NDArray, param_types: ParamType, rand: RandomState=None) -> NDArray:
+    assert len(bounds) == len(param_types), "Must have bounds and param types for each param."
+    if not rand:
+        rand = np.random
+    x = []
+    cols = len(bounds)
+    for c in range(cols):
+        x.append(rand_sample_in_bounds(bounds[c], param_types[c], rand))
+    return np.array(x)
+
+
 class AcquisitionOptimizer(ABC):
     """
     Optimizer which uses an acquisition funtion to find optimal inputs
@@ -72,7 +92,7 @@ class RandomAcquisitionOpt(AcquisitionOptimizer):
 
         # random search of the domain
         for _ in range(self.sample_size):
-            x_i = np.array([self.rand_sample_in_bounds(bounds[j], param_types[j]) for j in range(n_params)])
+            x_i = np.array([rand_sample_in_bounds(bounds[j], param_types[j], self.rand) for j in range(n_params)])
             X_samp.append(x_i)
         
         X_samp: NDArray = np.array(X_samp)
@@ -86,13 +106,13 @@ class RandomAcquisitionOpt(AcquisitionOptimizer):
         return best_x
 
 
-    def rand_sample_in_bounds(self, bounds: Tuple, param_type: ParamType) -> Union[float, int]:
-        # Uniform sample
-        if param_type == ParamType.Cont:
-            x_j = self.rand.uniform(bounds[0], bounds[1])
-        elif param_type == ParamType.Disc:
-            x_j = self.rand.randint(bounds[0], bounds[1])
-        return x_j
+    # def rand_sample_in_bounds(self, bounds: Tuple, param_type: ParamType) -> Union[float, int]:
+    #     # Uniform sample
+    #     if param_type == ParamType.Cont:
+    #         x_j = self.rand.uniform(bounds[0], bounds[1])
+    #     elif param_type == ParamType.Disc:
+    #         x_j = self.rand.randint(bounds[0], bounds[1])
+    #     return x_j
 
 
 class ConstrainedAcquisitionOpt(AcquisitionOptimizer):
