@@ -4,5 +4,5 @@ from util.defs import *
 
 class BayesianOptimizer(ABC):
     @abstractmethod
-    def optimize(self, iterations, objective) -> Tuple[NDArray, NDArray]:
+    def optimize(self, iterations, objective) -> Dict:
         pass
