@@ -95,7 +95,7 @@ class ConstrainedAcquisitionOpt(AcquisitionOptimizer):
         self.rand = rand if rand else np.random
         self.n_restarts = n_restarts
 
-# Constrained optimization function inspired by: https://github.com/thuijskens/bayesian-optimization/blob/master/python/gp.py
+    # Constrained optimization function inspired by: https://github.com/thuijskens/bayesian-optimization/blob/master/python/gp.py
     def optimize(self, X: NDArray, bounds: NDArray, param_types: Sequence[ParamType]) -> NDArray:
         # Find best surrogate prediction so far
         y_hat = self.surrogate.predict(X)

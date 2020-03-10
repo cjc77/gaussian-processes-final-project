@@ -18,3 +18,17 @@ def random_x_sample(bounds: NDArray, param_types: Sequence[ParamType], samples: 
     X[:, disc_inds] = np.round(X[:, disc_inds])
 
     return X
+
+
+def scalar_or_1d_to_2d(v: NDArray) -> NDArray:
+    # Is v a scalar array?
+    if v.ndim == 0:
+        v = v[np.newaxis]
+    # Is v a 1d array?
+    if v.ndim == 1:
+        v = v[:, np.newaxis]
+    return v
+
+
+def singleton_to_scalar(v: NDArray) -> Union[int, float]:
+    return v.item()
