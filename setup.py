@@ -6,5 +6,5 @@ setup(
     description="Final project for CS446",
     url="https://github.com/cjc77/gaussian_processes_final_project",
     author="Brendan Tschuy and Carson Cook",
-    packages=["util", "bayesian_optimizers", "acquisition"]
+    packages=["util", "hp_optimizers", "acquisition"]
 )

@@ -2,11 +2,11 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from numpy.random import RandomState
 
 from util.defs import *
-from bayesian_optimizers.bayesian_optimizer import BayesianOptimizer
+from hp_optimizers.hp_optimizer import HPOptimizer
 from acquisition.acquisition_optimizers import AcquisitionOptimizer, random_x_sample
 
 
-class GPROptimizer():
+class GPROptimizer(HPOptimizer):
     def __init__(self, gpr: GaussianProcessRegressor, opt_acquisition: AcquisitionOptimizer, objective: Objective, bounds: NDArray, param_types: Sequence[ParamType], rand: Optional[RandomState], initial_samples=1, fit=False):
         """ 
         Args:
@@ -20,23 +20,10 @@ class GPROptimizer():
                 beginning optimization (>= 1).
             fit (bool): Fit Gaussian process regressor upon instantiation.
         """
-        assert bounds.shape[1] == 2, "Bounds must be matrix of pairs of (max, min) values."
-        assert initial_samples >= 1, "Need at least one initial sample from parameter domain."
-        # need a random sample evaluated on the objective to start off
-        X: NDArray = random_x_sample(bounds, param_types, samples=initial_samples, rand=rand)
-        y: NDArray = np.array([objective(x) for x in X])
-        if y.ndim == 1:
-            y = y[:, np.newaxis]
+        super(GPROptimizer, self).__init__(objective, bounds, param_types, rand, initial_samples)
 
-        self.rand = rand
         self.gpr = gpr
-        self.X = X
-        self.y = y
-        self.objective = objective
         self.opt_acquisition = opt_acquisition
-        self.bounds = bounds
-        self.param_types = param_types
-        self.rand = rand
         if fit:
             self.gpr.fit(self.X, self.y)
 
