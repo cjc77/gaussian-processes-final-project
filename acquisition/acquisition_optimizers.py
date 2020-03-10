@@ -4,23 +4,8 @@ from numpy.random import RandomState
 from scipy.optimize import minimize
 
 from util.defs import *
+from util.util import random_x_sample
 from acquisition.acquisition_functions import AcquisitionFunction
-
-
-def random_x_sample(bounds: NDArray, param_types: Sequence[ParamType], samples: int, rand: RandomState=None) -> NDArray:
-    assert bounds.ndim == 2, f"Bounds must be 2d, not {bounds.shape}"
-    assert len(bounds) == len(param_types), "Must have bounds and param types for each param."
-    if not rand:
-        rand = np.random
-    if type(param_types) != NDArray:
-        pt = np.array(param_types)
-
-    X = rand.uniform(low=bounds[:, 0], high=bounds[:, 1], size=(samples, len(bounds)))
-
-    disc_inds = np.where(pt == ParamType.Disc)[0]
-    X[:, disc_inds] = np.round(X[:, disc_inds])
-
-    return X
 
 
 class AcquisitionOptimizer(ABC):
@@ -110,7 +95,7 @@ class ConstrainedAcquisitionOpt(AcquisitionOptimizer):
         self.rand = rand if rand else np.random
         self.n_restarts = n_restarts
 
-# Constrained optimization function inspired by: https://github.com/thuijskens/bayesian-optimization/blob/master/python/gp.py
+    # Constrained optimization function inspired by: https://github.com/thuijskens/bayesian-optimization/blob/master/python/gp.py
     def optimize(self, X: NDArray, bounds: NDArray, param_types: Sequence[ParamType]) -> NDArray:
         # Find best surrogate prediction so far
         y_hat = self.surrogate.predict(X)
