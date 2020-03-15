@@ -61,13 +61,16 @@ class GPROptimizer(HPOptimizer):
         if fit:
             self.gpr.fit(self.X, self.y)
 
-    def optimize(self, iterations: int, thresh: Optional[float] = None, verbose=False) -> Dict:
+    def optimize(self, iterations: int, thresh: Optional[float] = None, refit_on_completion=True, verbose=False) -> Dict:
         """ Perform Bayesian optimization algorithm.
         
         Args:
             iterations (int): Max number of iterations before stopping.
             thresh (Optional[float]): Objective return value which warrants stopping,
                 i.e. a y value that is good enough to stop at.
+            refit_on_completion (bool): whether or not to fit the Gaussian process
+                regressor for a final time. If False, the gpr will not be fit to the
+                most recent x sample upon optimization completion.
             verbose (bool): Whether print out updates during optimization.
         
         Returns:
@@ -104,6 +107,8 @@ class GPROptimizer(HPOptimizer):
 
         if verbose:
             print(f"Optimization yielded: {res}")
+        if refit_on_completion:
+            self.gpr.fit(self.X, self.y)
 
         return res
 
