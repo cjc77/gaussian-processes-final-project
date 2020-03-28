@@ -5,6 +5,7 @@ Implementation of Bayesian optimization for hyperparameter search.
 ## References
 [1] (2019) Hyperparameter optimization. (accessed: 03.12.2020). [Online]. Available:
 https://en.wikipedia.org/wiki/Hyperparameter_optimization
+
 [2] P. I. Frazier, “A tutorial on bayesian optimization,” Cornell University, Tech. Rep.,
 2018.
 
